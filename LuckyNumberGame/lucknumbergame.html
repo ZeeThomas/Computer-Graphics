@@ -1,0 +1,106 @@
+<HTML>
+    <HEAD>
+        <META CHARSET="UTF-8" >
+        <TITLE>Lucky Number Game</TITLE>
+        <SCRIPT>
+            class main 
+            {
+                constructor()
+                {
+                    //initialize program
+                    this.guess;
+                    this.numToBeat;
+                    this.isWon;
+                    this.numOfWins = 0;
+                    this.numOfLost = 0;
+                }
+                getNumbers()
+                {
+                    //this function gets the random numbers and sets them to the variables
+                    this.numToBeat = (Math.floor(Math.random()*100)+1);
+                    this.guess = (Math.floor(Math.random() * 100)+1);
+                    console.log("theNumber to beat is: ", this.numToBeat);
+                    console.log("The Guess is: ", this.guess);
+                }
+                decideWin()
+                {
+                    //this function determines if the guess is greater than the number to Beat
+                    if(this.guess > this.numToBeat)
+                    {
+                        //winner
+                        this.isWon = true;
+                        this.numOfWins++;
+                    }
+                    else
+                    {
+                        //loser
+                        this.isWon = false;
+                        this.numOfLost++;
+                    }
+                    console.log("Did they win? : ", this.isWon);
+                    console.log("Num of wins: ", this.numOfWins)
+                }
+                showResults()
+                {
+                    var winTitle = document.getElementById("win-text");
+                    if(this.isWon == true)
+                    {
+                        //winner
+                        winTitle.innerHTML = "You won!"
+                    }
+                    else
+                    {
+                        winTitle.innerHTML = "You lost..."
+                    }
+                    var theInfo = document.getElementById("numbers-text");
+                    theInfo.innerHTML = "Number to beat: " + this.numToBeat + " The Guess: " + this.guess;
+
+                }
+                changeImg()
+                {
+                    var imgElement = document.getElementById("win-or-lose-img")
+                    if(this.numOfWins > this.numOfLost)
+                    {
+                        //winning image
+                        imgElement.src ="happyimage.jpg"
+                    }
+                    else if(this.numOfWins == this.numOfLost)
+                    {
+                        imgElement.src ="neutralface.jpg"
+                    }
+                    else
+                    {
+                        //loser image
+                        imgElement.src ="sadface.jpg"
+
+                    }
+                }
+                playGame()
+                {
+                    this.getNumbers();
+                    this.decideWin();
+                    this.showResults();
+                    this.changeImg();
+                }
+            }
+            function onClick()
+            {
+                //calls the function of the main class
+                myMain.playGame();
+            }
+
+        </SCRIPT> 
+    </HEAD>
+    <BODY>
+        <HEADER><H1>Lucky Number Game</H1></HEADER>
+        <BUTTON onclick="onClick()">Play Game</BUTTON>
+        <H2 id="win-text"></H2>
+        <H2 id="numbers-text"></H2>
+        <img id="win-or-lose-img" src="">
+        <SECTION id="console"></SECTION>
+        <SCRIPT>
+            myMain = new main()
+        </SCRIPT>
+    </BODY>
+  
+</HTML>

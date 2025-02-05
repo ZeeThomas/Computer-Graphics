@@ -1,0 +1,695 @@
+<HTML>
+    <HEAD>
+        <META CHARSET="UTF-8" >
+        <TITLE>2D Adventure!</TITLE>
+        <!--Main class script-->
+        <SCRIPT>
+           //class goes here
+            class main 
+            {
+                constructor ()
+                {
+                    this.map = [
+                        [1,1,1,1,1,1,1,1],
+                        [1,0,0,2,0,0,0,1], 
+                        [1,0,0,2,0,0,0,1],
+                        [1,2,0,0,0,2,2,1],
+                        [1,2,0,0,0,0,2,1],
+                        [1,0,0,2,2,0,0,1],
+                        [1,0,0,0,0,0,0,1],
+                        [1,1,1,1,1,1,1,1]
+                    ];
+                    this.player = new Player();//the player should be in block (7, 7)
+                    this.monsters = []; //this holds the monsters 
+                    //creating monsters
+                    var monster1 = new Monster (4,2)
+                    monster1.setPic("assets/wraith.png")
+                    this.monsters.push(monster1);
+                    var monster2 =  new Monster (1,5)
+                    monster2.setAttack(15);
+                    monster2.setDefense(13);
+                    monster2.setPic("assets/wraith2.png")
+                    this.monsters.push(monster2)
+                    var monster3 = new Monster(1,2)
+                    monster3.setAttack(17);
+                    monster3.setDefense(16);
+                    monster3.setPic("assets/wraith3.png")
+                    this.monsters.push(monster3)
+                    this.potions = []; //holds the potions 
+                    var p1 = new object(2,2, "potion");
+                    p1.setPic("assets/potion.png");
+                    p1.onload = () => console.log("potion loaded")
+                    this.potions.push(p1);
+                    var potion2 = new object(1,6, "potion");
+                    potion2.setPic("assets/potion.png");
+                    this.potions.push(potion2);
+                    this.isGameOver = false;
+                    this.drawMap();
+                  
+                }
+               
+                
+                drawBrick (i, j)
+                {
+                    //draws a brick on the screen at pos i,j
+                    var squareSize = 64;
+                    
+                    if (i == 0)
+                    {
+                        //upside brick
+                        ctx.fillStyle = 'brown';
+                        ctx.fillRect((i*squareSize) , j*squareSize, 64, 64);
+                        ctx.strokeStyle = 'black'; // Border color of the squares
+                        ctx.strokeRect((i*squareSize), j*squareSize, 64, 64);
+                        
+                    }
+                    else if (i == 7)
+                    {
+                        ctx.fillStyle = 'brown';
+                        ctx.fillRect(i*squareSize, j*squareSize, 64, 64);
+                        ctx.strokeStyle = 'black'; // Border color of the squares
+                        ctx.strokeRect(i*squareSize, j*squareSize, 64, 64);
+                    }
+                    else if (j==0)
+                    {
+                        ctx.fillStyle = 'brown';
+                        ctx.fillRect((i*squareSize) , 0, 64, 30);
+                        ctx.strokeStyle = 'black'; // Border color of the squares
+                        ctx.strokeRect((i*squareSize) , 0, 64, 30);
+                    }
+                    else if (j==7)
+                    {
+                        ctx.fillStyle = 'brown';
+                        ctx.fillRect((i*squareSize) , 482, 64, 30);
+                        ctx.strokeStyle = 'black'; // Border color of the squares
+                        ctx.strokeRect((i*squareSize) , 482, 64, 30);
+                    }
+                    else 
+                    {
+                        ctx.fillStyle = 'brown';
+                        ctx.fillRect((i*squareSize) , j*squareSize, 64, 64);
+                        ctx.strokeStyle = 'black'; // Border color of the squares
+                        ctx.strokeRect((i*squareSize), j*squareSize, 64, 64);
+
+                    }
+                }
+                drawTree(i,j)
+                {
+                    //draws the tree at pos i j
+                    var squareSize = 64;
+                    //console.log("i: ", i*64, "and j: ", j*64)
+                    ctx.fillStyle = 'brown'
+                    ctx.fillRect((i*squareSize)+32, j*squareSize+32, 10, 30);
+                    ctx.beginPath();
+                    ctx.lineJoin = "miter";
+                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = "#32CD32";
+                    //CTX.arc(x,y,Radius, Start angle <Rad>, End angle <Rad>,counter-clockwise?)
+                    ctx.arc(i*squareSize+36,j*squareSize+25,10,0,360,false); //Clockwise
+                    ctx.stroke()
+                    ctx.lineWidth = 1;
+                }
+                drawPlayer()
+                {
+                    //draws the player
+                    var x = this.player.x;
+                    var y =(this.player).y;
+                    var img = (this.player).pic;
+                    var squareSize = 64;
+                    //console.log(y)
+                    img.onload = function ()
+                    {
+                        ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                    };
+
+                    // If the image is already loaded, draw it immediately
+                    if (img.complete) {
+                        ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                    }
+                    this.player.drawHealthBar();
+                }
+               
+                drawMonsters ()
+                {
+                    //draws the monsters 
+                    for (let i = 0; i <this.monsters.length;i++)
+                    {
+                        var monster = this.monsters[i];
+                        var x = monster.x;
+                        var y = monster.y;
+                        const img = monster.pic;
+
+                        var squareSize = 64;
+                        //console.log(img)
+                        if(monster.isLoaded)
+                        {
+                            ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                        }
+                      
+
+                        // If the image is already loaded, draw it immediately
+                        if (img.complete) {
+                            ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                        }
+                        monster.drawHealthBar();
+                    }
+                    
+                }
+                resetCanvas()
+                {
+                    //clears the canvas to restart drawing a new one
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let y = 0; y < 512; y += 64) 
+                    {
+                        for (let x = 0; x < 512; x += 64) 
+                        {
+                            // Draw a square
+                            ctx.fillStyle = 'green';
+                            ctx.fillRect(x, y, 64, 64);
+                            ctx.strokeStyle = 'black'; // Border color of the squares
+                            ctx.strokeRect(x, y, 64, 64);
+
+                        }
+                    }
+                }
+                drawPotions()
+                {
+                    //draws the potions
+                    //console.log(this.potions)
+                    for (let i = 0; i <this.potions.length;i++)
+                    {
+                        var potion = this.potions[i];
+                        var x = potion.x;
+                        var y = potion.y;
+                        console.log(x)
+                        var img = potion.pic;
+                        var squareSize = 64;
+                        //console.log(y)
+                        img.onload = function ()
+                        {
+                            ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                        };
+
+                        // If the image is already loaded, draw it immediately
+                       if (img.complete) {
+                            ctx.drawImage(img, x * squareSize, y * squareSize, squareSize, squareSize);
+                        }
+                    }
+                }
+                drawMap()
+                {
+                    //draw a map
+                    this.resetCanvas()
+
+                    for(let i = 0; i < 8; i++)
+                    {
+                        for(let j = 0; j<8; j++)
+                        {
+                            //this is block [i, j]
+                            let obj = this.map[i][j];
+                            //console.log("pos: ", i, ",", j, " obj is",obj);
+
+                            if (obj === 0)
+                            {
+                                //this is nothing
+                            }
+                            else if (obj === 1)
+                            {
+                                //this is a brick
+                                //draw rectangle
+                                this.drawBrick(j, i);
+                            }
+                            else if (obj === 2)
+                            {
+                                //this is a tree
+                                this.drawTree(j,i);
+                            }
+                        }
+                    }
+                    this.drawPlayer()
+                    this.drawMonsters()
+                    this.drawPotions()
+                }
+                isAreaOccupied(x, y, name)
+                {
+                    //checks to see if going in that direction causes a hit condition
+                    let obj = this.map[y][x];
+                    if (obj == 1 || obj == 2)
+                    {
+                        //cannot move here
+                        //console.log("can't move there: ", obj)
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                   
+                }
+                checkForPotion ()
+                {
+                    //if player goes over potion increase HP by 20;
+                    var potionRemove = null;
+                    for (let i = 0; i < this.potions.length; i++)
+                    {
+                        var potion = this.potions[i];
+
+                        var x = potion.x;
+                        var y = potion.y;
+
+                        if (this.player.x == x && this.player.y == y)
+                        {
+                            //player takes a potion
+                            //potions added 20HP
+                            this.player.HP +=20;
+                            potionRemove = i;
+                        }
+                    }
+                    if (potionRemove != null)
+                    {
+                        this.potions.splice(potionRemove, 1)
+                    }
+                }
+                movePlayer (direction)
+                {
+                    if (direction === "W")
+                    {
+                        //go up
+                        if (!this.isAreaOccupied(this.player.x, this.player.y-1) && !this.checkForMonsters(!this.player.x, this.player.y-1))
+                        {
+                            this.player.y = this.player.y -1;
+                            this.checkForPotion()
+                        }
+                       
+                    }
+                    else if (direction === "A")
+                    {
+                        //go left
+                        if (!this.isAreaOccupied(this.player.x-1, this.player.y) && !this.checkForMonsters(this.player.x-1, this.player.y))
+                        {
+                            this.player.x = this.player.x -1;
+                            this.checkForPotion()
+
+                        }
+                    }
+                    else if (direction === "S")
+                    {
+                        //go down
+                        if (!this.isAreaOccupied(this.player.x, this.player.y+1) && !this.checkForMonsters(this.player.x, this.player.y+1))
+                        {
+                            this.player.y = this.player.y +1;
+                            this.checkForPotion()
+
+                        }
+                    }
+                    else if (direction === "D")
+                    {
+                        //go right
+                        if (!this.isAreaOccupied(this.player.x+1, this.player.y) && !this.checkForMonsters(this.player.x+1, this.player.y))
+                        {
+                            this.player.x = this.player.x +1;
+                            this.checkForPotion()
+
+                        }
+                    }
+
+                }
+                checkForMonsters(x, y)
+                {
+                    //takes in the postioning of the player and the 
+                    //monsters to determine when to attack
+                    for (let i = 0; i < this.monsters.length; i++)
+                    {
+                        var monster = this.monsters[i];
+                        if (monster.x == x && monster.y == y)
+                        {
+                            //they have the same position
+                            //commence attack
+                            console.log("ATTACK!!!")
+                            this.player.isAttacking = true;
+                            this.player.attacking = i;
+                            return true;
+                        }
+                        
+                    }
+                    return false;
+                }
+                checkForPlayer (x, y, monster)
+                {
+                    //checks to see if the player is in the way of monster movement
+                    if (this.player.x == x && this.player.y == y)
+                    {
+                        console.log("Monster attacking player")
+                        monster.isAttacking = true;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                moveMonsters ()
+                {
+                    //move monsters 
+                    for (let i = 0; i < this.monsters.length; i++) 
+                    {
+                        let monster = this.monsters[i]; // 0 = up, 1 = left, 2 = down, 3 = right
+                        let moved = false;
+
+                        while (!moved) {
+                            let directions = Math.floor(Math.random() * 4);                            
+                            switch (directions) 
+                            {
+                                case 0: // Up
+                                    if (!this.isAreaOccupied(monster.x, monster.y - 1) && !this.checkForPlayer(monster.x, monster.y - 1, monster)) {
+                                        monster.y -= 1;
+                                        moved = true;
+                                    }
+                                    else if (this.checkForPlayer(monster.x, monster.y - 1, monster))
+                                    {
+                                        //they attacked so they forefeit a move
+                                        moved= true;
+                                    }
+                                    
+                                    break;
+                                case 1: // Left
+                                    if (!this.isAreaOccupied(monster.x - 1, monster.y) && !this.checkForPlayer(monster.x - 1, monster.y, monster)) {
+                                        monster.x -= 1;
+                                        moved = true;
+                                    }
+                                    else if (this.checkForPlayer(monster.x - 1, monster.y, monster))
+                                    {
+                                         //they attacked so they forefeit a move
+                                         moved= true;
+                                    }
+                                    break;
+                                case 2: // Down
+                                    if (!this.isAreaOccupied(monster.x, monster.y + 1) && !this.checkForPlayer(monster.x, monster.y + 1, monster)) {
+                                        monster.y += 1;
+                                        moved = true;
+                                    }
+                                    else if (this.checkForPlayer(monster.x, monster.y + 1, monster))
+                                    {
+                                         //they attacked so they forefeit a move
+                                         moved= true;
+                                    }
+                                    break;
+                                case 3: // Right
+                                    if (!this.isAreaOccupied(monster.x + 1, monster.y) && !this.checkForPlayer(monster.x + 1, monster.y, monster)) {
+                                        monster.x += 1;
+                                        moved = true;
+                                    }
+                                    else if (this.checkForPlayer(monster.x + 1, monster.y, monster)) 
+                                    {
+                                         //they attacked so they forefeit a move
+                                         moved= true;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+                playerAttack()
+                {
+                    
+                    if (this.player.isAttacking)
+                    {
+                        var monster = this.monsters[this.player.attacking];
+                        var damage;
+                        // Damage = (other.ATK-this.DEF 
+                        //or 1 whichever is higher)*random number 1-6. 
+                        if (this.player.ATK -monster.DEF > 1)
+                        {
+                            damage = (this.player.ATK -monster.DEF) * (Math.floor(Math.random() * 6)+1);
+                        }
+                        else
+                        {
+                            damage = 1 * (Math.floor(Math.random() * 6)+1)
+                        }
+                        console.log("Monster Lost ", damage, " damage");
+                        monster.HP = monster.HP - damage;
+                        console.log("Monster HP is ", monster.HP);
+                        this.player.isAttacking = false;
+                        this.player.attacking = null;
+                    }
+                }
+                monsterAttack()
+                {
+                    var monster;
+                    for(let i = 0; i < this.monsters.length; i++)
+                    {
+                        monster = this.monsters[i];
+                        if(monster.isAttacking)
+                        {
+                            var damage;
+                            // Damage = (other.ATK-this.DEF 
+                            //or 1 whichever is higher)*random number 1-6. 
+                            
+                            if (monster.ATK -this.player.DEF > 1)
+                            {
+                                damage = (monster.ATK = this.player.DEF) * (Math.floor(Math.random() * 6)+1);
+                            }
+                            else
+                            {
+                                damage = 1 * (Math.floor(Math.random() * 6)+1)
+                            }
+                            console.log("Player Lost ", damage, " damage");
+                            this.player.HP = this.player.HP - damage;
+                            console.log("Player HP is ", this.player.HP);
+                            monster.isAttacking = false;
+                        }
+                    }
+                }
+                checkWinCondition()
+                {
+                    //if a players hp is <= 0 then they are dead
+                    //console.log("checking player condition")
+                    if (this.player.HP <= 0)
+                    {
+                        //lost 
+                        //Game Over Scene
+                        this.isGameOver = true;
+                        console.log("Game over: YOU LOSE")
+                    }
+
+                    //if a monster is dead then remove them. 
+                    //If all monsters are dead then game win
+                    //console.log("checking monster condition")
+                    var deadMonster = null;
+                    for (let i = 0; i < this.monsters.length; i++)
+                    {
+                        var monster = this.monsters[i];
+                            
+                        if(monster.HP <= 0)
+                        {
+                            //dead monster remove
+                            deadMonster = i;
+                        }
+                    }
+                        
+                    if (deadMonster != null)
+                    {   
+                        console.log("monster ", deadMonster, " is dead")
+                        this.monsters.splice(deadMonster, 1);
+                    }
+                    if (this.monsters.length == 0)
+                    {
+                        //no more monsters. You Won!
+                        this.isGameOver = true;
+                        console.log("Game over: You Won!")
+                    }
+                }
+                update(direction)
+                {
+                    //move the player
+                    this.movePlayer(direction)
+                    //atack if ready
+                    this.playerAttack();
+                    //move the monsters
+                    this.moveMonsters()
+                    //attack player if ready
+                    this.monsterAttack()
+                    //check win condition
+                    this.checkWinCondition();
+                    //show map
+                    this.drawMap()
+                }
+            }
+        </SCRIPT> 
+        <!--Object/ Potion class-->
+        <SCRIPT>
+        class object 
+        {
+            constructor(x, y, name)
+            {
+                this.x = x;
+                this.y = y;
+                this.name = name;
+                this.pic = new Image()
+                //this.pic.src="assets/potion.png"
+            }
+            setPic(path)
+            {
+                //this.pic = new Image();
+                this.pic.src = path;
+            }
+        }
+        </SCRIPT>
+        <!---Character class here-->
+        <SCRIPT>
+            class Player extends object
+            {
+                constructor()
+                {
+                    super(6,6, "player");
+                    this.HP = 100;//int
+                    this.MHP = 100; //int
+                    this.ATK = 15; //int
+                    this.DEF = 15; //int
+                    this.isAttacking = false;
+                    this.attacking;
+                    this.pic = new Image();
+                    this.pic.src = "assets/Skeleton_Warrior.png";
+                }
+                setAttack(value)
+                {
+                    this.ATK = value;
+                }
+                setDefense(value)
+                {
+                    this.DEF = value;
+                }
+                drawHealthBar()
+                {
+                    //draws the healthBar
+                    const squareSize = 65;
+                    var xPos = this.x * 65;
+                    var yPos = this.y *65
+                    var healthPercent = this.HP/this.MHP;
+                    var color;
+                    if(healthPercent * 100 >67)
+                    {
+                        color = "#6fc276";
+                    }
+                    else if (healthPercent * 100 > 34 )
+                    {
+                        color = "#FFA500";
+                    }
+                    else
+                    {
+                        color = "#420D09";
+                    }
+                    ctx.fillStyle = color;
+                    ctx.fillRect(xPos, yPos, 50*healthPercent, 5);
+                    ctx.strokeStyle = "black";
+                    ctx.strokeRect(xPos, yPos, 50, 5)
+                }
+            }
+        </SCRIPT>
+        <SCRIPT>
+            class Monster extends object
+            {
+                constructor(x,y)
+                {
+                    super(x,y, "monster");
+                    this.HP = 60;//int
+                    this.MHP = 60; //int
+                    this.ATK = 10; //int
+                    this.DEF = 11; //int
+                    this.isAttacking = false; //bool
+                    this.pic = new Image();
+                    this.pic.onload = () => 
+                    {
+                        this.isLoaded = true; // Flag to mark the image as loaded
+                    };
+                    this.isLoaded = false;
+                    //this.pic.src = "assets/Wraith.png";
+                }
+                drawHealthBar()
+                {
+                    //draws the healthBar
+                    const squareSize = 65;
+                    var xPos = this.x * 65;
+                    var yPos = this.y *65
+                    var healthPercent = this.HP/this.MHP;
+                    var color;
+                    if(healthPercent*100 >67)
+                    {
+                        color = "#6fc276";
+                    }
+                    else if (healthPercent*100> 34 )
+                    {
+                        color = "#FFA500";
+                    }
+                    else if (healthPercent * 100 < 0)
+                    {
+                        //make the negative health look like
+                        //a zero in the bar
+                        healthPercent = 0;
+                    }
+                    else
+                    {
+                        color = "#420D09";
+                    }
+
+                    
+                    ctx.fillStyle = color;
+                    ctx.fillRect(xPos, yPos, 50*healthPercent, 5);
+                    ctx.strokeStyle = "black";
+                    ctx.strokeRect(xPos, yPos, 50, 5)
+                }
+                setAttack(value)
+                {
+                    this.ATK = value;
+                }
+                setDefense(value)
+                {
+                    this.DEF = value;
+                }
+            }
+        </SCRIPT>
+    </HEAD>
+    <BODY>
+        <HEADER><H1>2D Adventure</HEADER>
+        <SECTION id="mySection">
+            <canvas width="512" height="512" id="myCanvas" style="border: 1px solid black;"></canvas>
+        </SECTION>
+        <SCRIPT>
+            //your main var is istantiated here.
+            canvas = document.getElementById("myCanvas");
+            ctx = canvas.getContext('2d'); 
+            for (let y = 0; y < 512; y += 64) 
+            {
+                for (let x = 0; x < 512; x += 64) 
+                {
+                    // Draw a square
+                    ctx.fillStyle = 'green';
+                    ctx.fillRect(x, y, 64, 64);
+                    ctx.strokeStyle = 'black'; // Border color of the squares
+                    ctx.strokeRect(x, y, 64, 64);
+
+                }
+            }
+            myMain = new main();
+          
+            document.addEventListener('keydown', function(event) {
+            const key = event.key.toUpperCase(); // Make the key uppercase for uniformity
+            if (key === 'W' || key === 'A' || key === 'S' || key === 'D') 
+            {
+                if (!myMain.isGameOver)
+                {
+                    //if the game isn't over update game
+                    myMain.update(key);
+                }
+                else
+                {
+                    console.log("Game is over");
+                }
+                
+            }
+           
+            });
+        </SCRIPT>
+    </BODY>
+  
+</HTML>

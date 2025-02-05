@@ -1,0 +1,230 @@
+<html lange="en">
+    <head>
+        <META CHARSET="UTF-8">
+        <title>Slot Machine Game</title>
+        <!--This is the slot machine class-->
+        <script>
+            class slotmachine
+            {
+                constructor()
+                {
+                    this.lastAmountWon = 0;
+                    this.numbers = [];
+                    this.numberPics = [];
+                    //adds empty images to array
+                    this.slotOneImg = new Image();
+                    this.slotOneImg.width = "64";
+                    this.slotOneImg.height = "64";
+                    (this.numberPics).push(this.slotOneImg);
+                    this.slotTwoImg = new Image();
+                    this.slotTwoImg.width = "64";
+                    this.slotTwoImg.height = "64";
+                    (this.numberPics).push(this.slotTwoImg);
+                    this.slotThreeImg = new Image();
+                    this.slotThreeImg.width = "64";
+                    this.slotThreeImg.height = "64";
+                    (this.numberPics).push(this.slotThreeImg);
+
+                }
+                findPic(num)
+                {
+                    //this determines the path of the image based off the num parameter
+                    var path = "";
+                    switch (num)
+                    {
+                        case 0:
+                            path = "assets/number-0.png"
+                            break;
+                        case 1:
+                            path = "assets/number-1.png"                            
+                            break;
+                        case 2:
+                            path = "assets/number-2.png"                            
+                            break;
+                        case 3:
+                            path = "assets/number-3.png"                            
+                            break;
+                        case 4:
+                            path = "assets/number-4.png"                            
+                            break;
+                        case 5:
+                            path = "assets/number-5.png"                            
+                            break;
+                        case 6:
+                            path = "assets/number-6.png"                            
+                            break;
+                        default:
+                            console.log("This shouldn't happen.");
+                    }
+                    return path;
+                }
+                determineWinnings()
+                {
+                    var num1 = this.numbers[0];
+                    var num2 = this.numbers[1];
+                    var num3 = this.numbers[2];
+                    if (this.numbers[0] == 0 && this.numbers[1] == 0 && this.numbers[2] == 0)
+                    {
+                        this.lastAmountWon = 14;
+                    }
+                    else if (this.numbers[0] == num1 && this.numbers[1] == num1 && this.numbers[2] == num1)
+                    {
+                        this.lastAmountWon = 7;
+                    }
+                    else if(this.numbers[0] == 0 && this.numbers[1] == 0 && this.numbers[2] != 0)
+                    {
+                        this.lastAmountWon = 3;
+                    }
+                    else if(this.numbers[0] == num1 && this.numbers[1] == num1)
+                    {
+                        this.lastAmountWon = 2;
+                    }
+                    else if(this.numbers[0] == 0)
+                    {
+                        this.lastAmountWon = 1;
+                    }
+                    else
+                    {
+                        this.lastAmountWon = 0;
+                    }
+                }
+                getNumbers()
+                {
+                    //gets a random number between 0-6
+                    //pushes it to class variable array "numbers"
+                    var slotNumber = Math.floor(Math.random()*7);
+                    (this.numbers).push(slotNumber);
+                    return slotNumber
+                }
+                addPic(i,slotNumber, slotContainer)
+                {
+                    //adds the picture to the class array "numbersPic"
+                    //adds alt text of the number it's representing
+                    //adds the image to the screen
+                    (this.numberPics[i]).src = this.findPic(slotNumber);
+                    (this.numberPics[i]).alt = slotNumber.toString();
+                    slotContainer.appendChild(this.numberPics[i]);
+                }
+                cleanUpSection()
+                {
+                    //removes the pics
+                    this.numbers.pop();
+                    this.numbers.pop();
+                    this.numbers.pop();
+                }
+                play()
+                {
+                    var slotContainer = document.getElementById("slot-machine-container")
+                   
+                    const lineBreak = document.createElement("br");
+
+                    for (let i = 0; i < 3; i++)
+                    {
+                        var num = this.getNumbers()
+                        this.addPic(i,num, slotContainer);
+                    }
+                    
+                    slotContainer.appendChild(lineBreak);
+                    //console.log(this.numbers);
+                    //console.log(this.numberPics);
+                    this.determineWinnings();
+                    this.cleanUpSection();
+                    return this.lastAmountWon;
+                }
+            }
+        </script>
+        <!--This is the Main Class-->
+        <script >
+            class main
+            {
+                constructor()
+                {
+                    this.money = 100;
+                    this.slots = [];
+                    var slotMachine1 = new slotmachine();
+                    var slotMachine2 = new slotmachine();
+                    var slotMachine3 = new slotmachine();
+                    (this.slots).push(slotMachine1);
+                    (this.slots).push(slotMachine2);
+                    (this.slots).push(slotMachine3);
+
+                    var newSection = document.createElement("section");
+                }
+                startSlot()
+                {
+                    //runs the slot game for each instance 
+                    var winnings = 0;
+                    for(let i=0; i < this.slots.length; i++)
+                    {
+                            //iterates through each instance in the array
+                            this.money--;
+                            winnings +=(this.slots[i]).play();
+                    }
+                    return winnings
+                }
+                determineWin (moneyMade)
+                {
+                    //determines if the winner won or lost
+                    //changes game text to show user
+                    var moneyText = document.getElementById("money-status");
+                    var gameStatus = document.getElementById("win-or-lose-status");
+                    if(moneyMade > 0)
+                    {
+                        //winner
+                        //console.log("winner");
+                        this.money +=moneyMade;
+                        moneyText.innerHTML = "Money = $" +this.money;
+                        gameStatus.innerHTML = "Winner!! You won $" +moneyMade 
+                            
+                    }
+                    else
+                    {
+                        //loser
+                        //console.log("Loser")
+                        moneyText.innerHTML = "Money = $" +this.money;
+                        gameStatus.innerHTML = "What a loser..."
+
+                    }
+                }
+                playAll()
+                {
+                  
+                   
+                    if(this.money > 0)
+                    {
+                        //has enough money for a game
+                        var moneyMade = this.startSlot();
+                        this.determineWin(moneyMade);
+                        
+                        
+                    }
+                    else
+                    {
+                        //don't have enough money
+                        var gameStatus = document.getElementById("win-or-lose-status");
+                        gameStatus.innerHTML = "Sorry you ran out of funds. Game Over!"
+                    }
+
+                }
+            }
+            function startGame()
+            {
+                var slotContainer = document.getElementById("slot-machine-container")
+                slotContainer.innerHTML = "";
+                myMain.playAll();
+                
+            }
+        </script>
+    </head>
+    <body>
+        <header><H1>Slot Machine</H1></header>
+        <BUTTON onclick="startGame()">Play Slots</BUTTON>
+        <h3 id="money-status">Money = $100</h3>
+        <h2 id="win-or-lose-status"></h2>
+        <div id="slot-machine-container"></div>
+        <script>
+            myMain = new main();
+           
+        </script>
+    </body>
+</html>
