@@ -320,7 +320,7 @@
 				if(event.type === "mousemove")
 				{
 					//console.log("mouse moves");
-					//m.mouseMove(event);
+					m.mouseMove(event);
 				}
 				else
 				{
@@ -548,7 +548,17 @@
 				gl.drawArrays(primitiveType, offset, count );
 			}
 		}
-		
+		class SquareOL extends Square
+		{
+			constructor()
+			{
+				super();
+			}
+			render(program)
+			{
+
+			}
+		}
 		class Line extends shape
 		{
 			constructor ()
@@ -556,7 +566,6 @@
 				super();
 				this.positions = [
 				]
-				this.defaultType = gl.LINES;
 				this.type = gl.LINES;
 				this.isFinished = false;
 				//creates the vrt count
@@ -609,7 +618,6 @@
 				super();
 				this.positions = [
 				]
-				this.defaultType = gl.TRIANGLE_FAN;
 				this.type = gl.TRIANGLE_FAN;
 				this.isFinished = false;
 				//creates the vrt count
@@ -666,12 +674,6 @@
 					{
 						this.positions.push(newx,newy,0,R,G,B);
 						this.VertCount++;
-						
-					}
-					else
-					{
-						this.maxVertCount = this.VertCount;
-						this.isFinished = true;
 					}
 					
 				}
@@ -680,7 +682,7 @@
 				//load the points.
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.positions), gl.STATIC_DRAW);
 				if (this.VertCount == this.maxVertCount)	{
-					console.log("finished")
+					
 					this.isFinished = true;
 				}
 			}
@@ -723,7 +725,6 @@
 				super();
 				this.positions = [
 				]
-				this.defaultType =gl.TRIANGLE_FAN;
 				this.type = gl.TRIANGLE_FAN;
 				this.isFinished = false;
 				//creates the vrt count
